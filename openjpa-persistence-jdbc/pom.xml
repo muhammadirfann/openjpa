@@ -32,6 +32,7 @@
 
     <groupId>org.apache.openjpa</groupId>
     <artifactId>openjpa-persistence-jdbc</artifactId>
+    <version>2.4.2-xl4.2</version>
     <packaging>jar</packaging>
     <name>OpenJPA Persistence JDBC</name>
     <description>OpenJPA Persistence JDBC</description>

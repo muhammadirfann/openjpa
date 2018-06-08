@@ -25,16 +25,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import javax.persistence.criteria.AbstractQuery;
-import javax.persistence.criteria.CollectionJoin;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.ListJoin;
-import javax.persistence.criteria.MapJoin;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import javax.persistence.criteria.SetJoin;
-import javax.persistence.criteria.Subquery;
+import javax.persistence.criteria.*;
 import javax.persistence.metamodel.EntityType;
 
 import org.apache.openjpa.kernel.exps.Context;
@@ -42,6 +33,7 @@ import org.apache.openjpa.kernel.exps.ExpressionFactory;
 import org.apache.openjpa.kernel.exps.QueryExpressions;
 import org.apache.openjpa.kernel.exps.Value;
 import org.apache.openjpa.kernel.jpql.JPQLExpressionBuilder;
+import org.apache.openjpa.lib.util.OrderedMap;
 import org.apache.openjpa.meta.ClassMetaData;
 import org.apache.openjpa.meta.FieldMetaData;
 import org.apache.openjpa.meta.ValueMetaData;
@@ -77,14 +69,18 @@ class SubqueryImpl<T> extends ExpressionImpl<T> implements Subquery<T> {
     SubqueryImpl(Class<T> cls, AbstractQuery<?> parent) {
         super(cls);
         _parent = parent;
+        OrderedMap _params;
         if (parent instanceof CriteriaQueryImpl) {
             _model = ((CriteriaQueryImpl<?>)parent).getMetamodel();
+            _params = ((CriteriaQueryImpl<?>)parent).getParameterTypes();
         } else if (parent instanceof SubqueryImpl) {
             _model = ((SubqueryImpl<?>)parent).getMetamodel();
+            _params = ((SubqueryImpl<?>)parent).getInnermostParent().getParameterTypes();
         } else {
             _model = null;
+            _params = null;
         }
-        _delegate = new CriteriaQueryImpl<T>(_model, this);
+        _delegate = new CriteriaQueryImpl<T>(_model, this, _params);
     }
     
     /**
@@ -364,5 +360,19 @@ class SubqueryImpl<T> extends ExpressionImpl<T> implements Subquery<T> {
     
     public StringBuilder asVariable(AliasContext q) {
         return asValue(q);
+    }
+
+    @Override
+    public void acceptVisit(CriteriaExpressionVisitor visitor) {
+        // $TODO: this should be all expressions, not just parameters,
+        // but I don't know exactly how I would get those, plus this is so far
+        // only used for gathering parameters, so...
+        Set<ParameterExpression<?>> pSet = _delegate.getParameters();
+        Expression<?>[] expressions = new Expression<?>[pSet.size()];
+        int i = 0;
+        for (ParameterExpression pe : pSet) {
+            expressions[i++] = pe;
+        }
+        Expressions.acceptVisit(visitor, this, expressions);
     }
 }
