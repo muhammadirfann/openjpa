@@ -134,8 +134,8 @@ public class JDBCBrokerFactory extends AbstractBrokerFactory {
             // we can use the first broker user/pass for connection if no
             // global login is given
             if (!_synchronizedMappings) {
-                _synchronizedMappings = true;
                 synchronizeMappings(broker.getClassLoader());
+                _synchronizedMappings = true;
             }
 
             return broker;
