@@ -44,12 +44,12 @@ public class TestDetachNoCascade extends SingleEMFTestCase {
             Entity14.class,
             CLEAR_TABLES);
         assertNotNull(emf);
-        em = emf.createEntityManager();
-        assertNotNull(em);
         compat = emf.getConfiguration().getCompatibilityInstance();
         compat.setFlushBeforeDetach(true);
         compat.setCopyOnDetach(false);
         compat.setCascadeWithDetach(false);
+        em = emf.createEntityManager();
+        assertNotNull(em);
 
     }
     
@@ -111,8 +111,8 @@ public class TestDetachNoCascade extends SingleEMFTestCase {
         id++;
         boolean cwd = compat.getCascadeWithDetach();
         boolean cod = compat.getCopyOnDetach();
-        compat.setCascadeWithDetach(false);
-        compat.setCopyOnDetach(false);
+        em.setCascadeWithDetach(false);
+        em.setCopyOnDetach(false);
         em.getTransaction().begin();
         create(id);
         em.persistAll(allEntities);
@@ -122,8 +122,8 @@ public class TestDetachNoCascade extends SingleEMFTestCase {
         assertTrue(em.contains(e14));
         assertTrue(em.contains(e7));
         em.getTransaction().commit();
-        compat.setCascadeWithDetach(cwd);
-        compat.setCopyOnDetach(cod);
+        em.setCascadeWithDetach(cwd);
+        em.setCopyOnDetach(cod);
     }
     
     // Test clear on a new, unmanaged object. Nothing should happen. After
@@ -144,7 +144,7 @@ public class TestDetachNoCascade extends SingleEMFTestCase {
 
         boolean cod = compat.getCopyOnDetach();
         boolean fbd = compat.getFlushBeforeDetach();
-        compat.setCopyOnDetach(false);
+        em.setCopyOnDetach(false);
         compat.setFlushBeforeDetach(false);
         
         id++;
@@ -167,7 +167,7 @@ public class TestDetachNoCascade extends SingleEMFTestCase {
         assertEquals("entity1", e1.getName());
         em.getTransaction().commit();
         
-        compat.setCopyOnDetach(cod);
+        em.setCopyOnDetach(cod);
         compat.setFlushBeforeDetach(fbd);
     }
     
@@ -177,8 +177,8 @@ public class TestDetachNoCascade extends SingleEMFTestCase {
 
         boolean cwd = compat.getCascadeWithDetach();
         boolean cod = compat.getCopyOnDetach();
-        compat.setCascadeWithDetach(false);
-        compat.setCopyOnDetach(false);
+        em.setCascadeWithDetach(false);
+        em.setCopyOnDetach(false);
         
         id++;
         em.getTransaction().begin();
@@ -198,8 +198,8 @@ public class TestDetachNoCascade extends SingleEMFTestCase {
         assertNotNull(e1); 
         em.getTransaction().commit();
         
-        compat.setCascadeWithDetach(cwd);
-        compat.setCopyOnDetach(cod);
+        em.setCascadeWithDetach(cwd);
+        em.setCopyOnDetach(cod);
     }
     
     // Try to clear an entity that has already been cleared. There should be
@@ -207,8 +207,8 @@ public class TestDetachNoCascade extends SingleEMFTestCase {
     public void testClearOnClearedEntity() {
         boolean cwd = compat.getCascadeWithDetach();
         boolean cod = compat.getCopyOnDetach();
-        compat.setCascadeWithDetach(false);
-        compat.setCopyOnDetach(false);
+        em.setCascadeWithDetach(false);
+        em.setCopyOnDetach(false);
 
         id++;
         em.getTransaction().begin();
@@ -219,16 +219,16 @@ public class TestDetachNoCascade extends SingleEMFTestCase {
         assertFalse(em.contains(e1));
         em.getTransaction().commit();
 
-        compat.setCascadeWithDetach(cwd);
-        compat.setCopyOnDetach(cod);
+        em.setCascadeWithDetach(cwd);
+        em.setCopyOnDetach(cod);
     }
     
     // Test that no copy is done by default
     public void testNoCopy() {
         boolean cwd = compat.getCascadeWithDetach();
         boolean cod = compat.getCopyOnDetach();
-        compat.setCascadeWithDetach(false);
-        compat.setCopyOnDetach(false);
+        em.setCascadeWithDetach(false);
+        em.setCopyOnDetach(false);
 
         id++;
         em.getTransaction().begin();
@@ -237,7 +237,7 @@ public class TestDetachNoCascade extends SingleEMFTestCase {
         Entity14 e14PreDetach = e1.getE14();
         
         // Flip on cascade to detach e14
-        compat.setCascadeWithDetach(true);
+        em.setCascadeWithDetach(true);
         
         em.detach(e1);
         // Assert that e14 was not copied on detachment
@@ -246,10 +246,10 @@ public class TestDetachNoCascade extends SingleEMFTestCase {
         assertFalse(em.contains(e14));
         em.getTransaction().commit();
 
-        compat.setCascadeWithDetach(false);
+        em.setCascadeWithDetach(false);
 
-        compat.setCascadeWithDetach(cwd);
-        compat.setCopyOnDetach(cod);
+        em.setCascadeWithDetach(cwd);
+        em.setCopyOnDetach(cod);
     }
     
     // Change copy option and validate
@@ -264,7 +264,7 @@ public class TestDetachNoCascade extends SingleEMFTestCase {
         assertTrue(em.contains(e1));
         em.getTransaction().commit();
         
-        compat.setCopyOnDetach(false);
+        em.setCopyOnDetach(false);
     }
     
     // Change flush option and validate

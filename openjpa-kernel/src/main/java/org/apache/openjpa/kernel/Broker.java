@@ -760,4 +760,10 @@ public interface Broker
 	 * no active transaction and nontransactional writing is not enabled).
 	 */
 	public void assertWriteOperation ();
+
+	boolean getCascadeWithDetach();
+	void setCascadeWithDetach(boolean s);
+	boolean getCopyOnDetach();
+	void setCopyOnDetach(boolean s);
+
 }

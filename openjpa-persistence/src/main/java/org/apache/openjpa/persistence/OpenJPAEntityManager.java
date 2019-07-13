@@ -1188,5 +1188,8 @@ public interface OpenJPAEntityManager
     */
     public Set<String> getSupportedProperties();
 
+    void setCascadeWithDetach(boolean s);
+    void setCopyOnDetach(boolean s);
+
 
 }

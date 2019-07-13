@@ -848,18 +848,18 @@ public class EntityManagerImpl
         assertNotCloseInvoked();
         Compatibility compat = this.getConfiguration().
             getCompatibilityInstance();
-        boolean copyOnDetach = compat.getCopyOnDetach();
-        boolean cascadeWithDetach = compat.getCascadeWithDetach();
+        boolean copyOnDetach = _broker.getCopyOnDetach();
+        boolean cascadeWithDetach = _broker.getCascadeWithDetach();
         // Set compatibility options to get 1.x detach behavior
-        compat.setCopyOnDetach(true);
-        compat.setCascadeWithDetach(true);
+        _broker.setCopyOnDetach(true);
+        _broker.setCascadeWithDetach(true);
         try {
             T t = (T)_broker.detach(entity, this);
             return t;
         } finally {
             // Reset compatibility options
-            compat.setCopyOnDetach(copyOnDetach);
-            compat.setCascadeWithDetach(cascadeWithDetach);
+            _broker.setCopyOnDetach(copyOnDetach);
+            _broker.setCascadeWithDetach(cascadeWithDetach);
         }        
     }
 
@@ -1891,5 +1891,15 @@ public class EntityManagerImpl
             properties = new HashMap<String, Object>(properties);
         }
         return properties;
+    }
+
+    @Override
+    public void setCascadeWithDetach(boolean s) {
+        _broker.setCascadeWithDetach(s);
+    }
+
+    @Override
+    public void setCopyOnDetach(boolean s) {
+        _broker.setCopyOnDetach(s);
     }
 }
