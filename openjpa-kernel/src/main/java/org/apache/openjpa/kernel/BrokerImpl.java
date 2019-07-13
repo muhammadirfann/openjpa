@@ -243,6 +243,8 @@ public class BrokerImpl implements Broker, FindCallbacks, Cloneable, Serializabl
     private boolean _suppressBatchOLELogging = false;
     private boolean _allowReferenceToSiblingContext = false;
     private boolean _postLoadOnMerge = false;
+    private boolean _cascadeWithDetach = false;
+    private boolean _copyOnDetach = false;
 
     // status
     private int _flags = 0;
@@ -345,6 +347,9 @@ public class BrokerImpl implements Broker, FindCallbacks, Cloneable, Serializabl
         // Force creation of a new operating set
         _operatingDirty = true;
         initializeOperatingSet();
+
+        _cascadeWithDetach = _compat.getCascadeWithDetach();
+        _copyOnDetach = _compat.getCopyOnDetach();
 
         _connRetainMode = connMode;
         _managed = managed;
@@ -3601,15 +3606,32 @@ public class BrokerImpl implements Broker, FindCallbacks, Cloneable, Serializabl
             call = _call;
         // Make sure ALL entities are detached, even new ones that are loaded
         // during the detach processing
-        boolean origCascade = _compat.getCascadeWithDetach();
-        _compat.setCascadeWithDetach(true);
+
+        boolean origCascade = _cascadeWithDetach;
+        _cascadeWithDetach = true;
+
         try {
             new DetachManager(this, true, call)
                 .detachAll(new ManagedObjectCollection(states));
+        } finally {
+            _cascadeWithDetach = origCascade;
         }
-        finally {
-            _compat.setCascadeWithDetach(origCascade);
-        }
+    }
+
+    public boolean getCascadeWithDetach() {
+        return _cascadeWithDetach;
+    }
+
+    public boolean getCopyOnDetach() {
+        return _copyOnDetach;
+    }
+
+    public void setCascadeWithDetach(boolean s) {
+        _cascadeWithDetach = s;
+    }
+
+    public void setCopyOnDetach(boolean s) {
+        _copyOnDetach = s;
     }
 
     private void detachAllInternalLite() {

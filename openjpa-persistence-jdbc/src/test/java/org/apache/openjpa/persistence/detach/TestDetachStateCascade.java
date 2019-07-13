@@ -59,13 +59,15 @@ public class TestDetachStateCascade extends SingleEMFTestCase {
             org.apache.openjpa.persistence.detach.EntityD.class,
             org.apache.openjpa.persistence.detach.EntityE.class);
         assertNotNull(emf);
-        em = emf.createEntityManager();
-        assertNotNull(em);
         compat = emf.getConfiguration().getCompatibilityInstance();
         assertNotNull(compat);
         compat.setFlushBeforeDetach(true);
         compat.setCopyOnDetach(false);
         compat.setCascadeWithDetach(false);
+
+        em = emf.createEntityManager();
+        assertNotNull(em);
+
         id++;
         create(id);
 
