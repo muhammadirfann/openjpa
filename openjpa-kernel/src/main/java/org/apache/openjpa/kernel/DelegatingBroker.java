@@ -1565,6 +1565,26 @@ public class DelegatingBroker
         }
     }
 
+    @Override
+    public boolean getCascadeWithDetach() {
+        return _broker.getCascadeWithDetach();
+    }
+
+    @Override
+    public void setCascadeWithDetach(boolean s) {
+        _broker.setCascadeWithDetach(s);
+    }
+
+    @Override
+    public boolean getCopyOnDetach() {
+        return _broker.getCopyOnDetach();
+    }
+
+    @Override
+    public void setCopyOnDetach(boolean s) {
+        _broker.setCopyOnDetach(s);
+    }
+
     ///////////////////////////////////////////////
     // Implementation of Synchronization interface
     ///////////////////////////////////////////////

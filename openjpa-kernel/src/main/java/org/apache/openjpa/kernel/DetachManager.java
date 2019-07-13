@@ -286,12 +286,11 @@ public class DetachManager
             broker.getConfiguration().getCompatibilityInstance();
         _flushBeforeDetach = compatibility.getFlushBeforeDetach();
         _reloadOnDetach = compatibility.getReloadOnDetach();
-        _cascadeWithDetach = compatibility.getCascadeWithDetach();
+        _cascadeWithDetach = broker.getCascadeWithDetach();
         if (full) {
             _copy = false;
-        }
-        else {
-            _copy = compatibility.getCopyOnDetach();;
+        } else {
+            _copy = _broker.getCopyOnDetach();
         }
     }
 
