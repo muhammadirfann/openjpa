@@ -110,6 +110,12 @@ public interface OpenJPAConfiguration
     public static final String LOG_TOOL = "openjpa.Tool";
 
     /**
+     * Name of the logger for tracing cache use.
+     * <code>openjpa.Cache</code>.
+     */
+    public static final String LOG_CACHE = "openjpa.Cache";
+
+    /**
      * Option for runtimes that support nontransactional reads.
      */
     public static final String OPTION_NONTRANS_READ =

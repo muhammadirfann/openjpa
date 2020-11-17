@@ -341,8 +341,10 @@ public class BrokerImpl implements Broker, FindCallbacks, Cloneable, Serializabl
         _compat = _conf.getCompatibilityInstance();
         _factory = factory;
         _log = _conf.getLog(OpenJPAConfiguration.LOG_RUNTIME);
-        if (!fromDeserialization)
+        if (!fromDeserialization) {
+            _conf.getLog(OpenJPAConfiguration.LOG_CACHE).trace(_loc.get("cache-recreated", this));
             _cache = new ManagedCache(this);
+        }
         // Force creation of a new operating set
         _operatingDirty = true;
         initializeOperatingSet();
@@ -3500,6 +3502,7 @@ public class BrokerImpl implements Broker, FindCallbacks, Cloneable, Serializabl
     private void detachAllInternalLite() {
         ManagedCache old = _cache;
         _cache = new ManagedCache(this);
+        _conf.getLog(OpenJPAConfiguration.LOG_CACHE).trace(_loc.get("cache-recreated", this));
         // TODO : should I call clear on old cache first? perhaps a memory leak?
         Collection<StateManagerImpl> states = old.copy();
         

@@ -240,47 +240,38 @@ public abstract class AbstractOpenJpaMojo extends AbstractMojo
      * This function will usually get called by {@link #getOptions()}
      * @return the Options filled with the initial values
      */
-    protected Options createOptions() throws MojoExecutionException
-    {
+    protected Options createOptions() throws MojoExecutionException {
         Options opts = new Options();
-        if ( toolProperties != null )
-        {
-          opts.putAll( toolProperties );
+        if (toolProperties != null) {
+            opts.putAll(toolProperties);
         }
 
         String persistenceXmlResource = "META-INF/persistence.xml";
 
-        if ( persistenceXmlFile != null && persistenceXmlFile.length() > 0)
-        {
+        if (persistenceXmlFile != null && persistenceXmlFile.length() > 0) {
             fixPersistenceXmlIfNeeded(Thread.currentThread().getContextClassLoader());
-            opts.put( OPTION_PROPERTIES_FILE, persistenceXmlFile );
+            opts.put(OPTION_PROPERTIES_FILE, persistenceXmlFile);
             getLog().debug("using special persistence XML file: " + persistenceXmlFile);
             persistenceXmlResource = persistenceXmlFile;
         }
 
         if (persistenceUnitName != null && persistenceUnitName.length() > 0) {
             opts.put(OPTION_PROPERTIES, persistenceXmlResource + "#" + persistenceUnitName);
-        }
-
-
-        else if (!new File(classes, "META-INF/persistence.xml").exists())
-        { // use default but try from classpath
+        } else if (!new File(classes, "META-INF/persistence.xml").exists()) { // use default but try from classpath
             persistenceXmlFile = "META-INF/persistence.xml";
             if (!fixPersistenceXmlIfNeeded(Thread.currentThread().getContextClassLoader())) {
                 persistenceXmlFile = null;
             } else {
-                opts.put( OPTION_PROPERTIES_FILE, persistenceXmlFile );
+                opts.put(OPTION_PROPERTIES_FILE, persistenceXmlFile);
             }
         }
 
-        if ( connectionDriverName != null )
-        {
-            opts.put( OPTION_CONNECTION_DRIVER_NAME, connectionDriverName );
+        if (connectionDriverName != null) {
+            opts.put(OPTION_CONNECTION_DRIVER_NAME, connectionDriverName);
         }
 
-        if ( connectionProperties != null )
-        {
-            opts.put( OPTION_CONNECTION_PROPERTIES, connectionProperties );
+        if (connectionProperties != null) {
+            opts.put(OPTION_CONNECTION_PROPERTIES, connectionProperties);
         }
 
         return opts;
