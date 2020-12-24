@@ -405,4 +405,19 @@ class SubqueryImpl<T> extends ExpressionImpl<T> implements Subquery<T> {
     public StringBuilder asVariable(AliasContext q) {
         return asValue(q);
     }
+
+    @Override
+    public void acceptVisit(CriteriaExpressionVisitor visitor) {
+        // $TODO: this should be all expressions, not just parameters,
+        // but I don't know exactly how I would get those, plus this is so far
+        // only used for gathering parameters, so...
+        Set<ParameterExpression<?>> pSet = _delegate.getParameters();
+        Expression<?>[] expressions = new Expression<?>[pSet.size()];
+        int i = 0;
+        for (ParameterExpression<?> pe : pSet) {
+            expressions[i++] = pe;
+        }
+        Expressions.acceptVisit(visitor, this, expressions);
+    }
+
 }
