@@ -76,7 +76,17 @@ class InSubQExpression
         InSubQExpState istate = (InSubQExpState) state;
         _sub.calculateValue(sel, ctx, istate.subqState, null, null);
         _val.calculateValue(sel, ctx, istate.valueState, null, null);
-        _val.appendTo(sel, ctx, istate.valueState, buf, 0);
+        int l = _val.length(sel, ctx, istate.valueState);
+        if (l > 1) {
+             buf.append("(");
+        }
+        for (int i=0; i<l; i++) {
+            if (i>0) { buf.append(","); }
+            _val.appendTo(sel, ctx, istate.valueState, buf, i);
+        }
+        if (l>1) {
+            buf.append(")");
+        }
         buf.append(" IN ");
         _sub.appendTo(sel, ctx, istate.valueState, buf, 0);
     }
