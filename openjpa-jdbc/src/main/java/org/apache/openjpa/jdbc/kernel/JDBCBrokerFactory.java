@@ -36,6 +36,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.apache.openjpa.conf.SchemaGenerationSource;
+import org.apache.openjpa.jdbc.ExternalSchema;
 import org.apache.openjpa.jdbc.conf.JDBCConfiguration;
 import org.apache.openjpa.jdbc.conf.JDBCConfigurationImpl;
 import org.apache.openjpa.jdbc.meta.MappingRepository;
@@ -167,6 +168,9 @@ public class JDBCBrokerFactory extends AbstractBrokerFactory {
 
         // initialize the schema
         for (Class<?> cls : classes) {
+            if (cls.getAnnotation(ExternalSchema.class) != null) {
+                continue;
+            }
             try {
                 tool.run(cls);
             } catch (IllegalArgumentException iae) {
