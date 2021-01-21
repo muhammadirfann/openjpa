@@ -2046,31 +2046,6 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-release-plugin</artifactId>
-                    <version>2.5.3</version>
-                    <configuration>
-                        <useReleaseProfile>false</useReleaseProfile>
-                        <tagNameFormat>@{project.version}</tagNameFormat>
-
-                        <!--
-                            The openbooks example contains a build.xml which tries to add ~/.m2/repository/../openjpa-all-nnn.jar
-                            to the classpath. But since the maven-release-plugin by default only prepares with 'clean verify'
-                            the jar doesn't end in the local m2 repo. It will only be in the opanjpa-all/target folder.
-                            For now I forced an 'install', but we should ultimately just fix the openbooks example.
-                        -->
-                        <preparationGoals>clean install</preparationGoals>
-
-                        <goals>deploy</goals>
-                        <arguments>-Papache-release,docbook-profile,test-derby,bval</arguments>
-                        <autoVersionSubmodules>true</autoVersionSubmodules>
-
-                        <!-- special config for git -->
-                        <pushChanges>false</pushChanges>
-                        <localCheckout>true</localCheckout>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-antrun-plugin</artifactId>
                     <version>1.8</version>
                     <dependencies>
