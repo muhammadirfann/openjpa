@@ -95,10 +95,13 @@ public class DiscriminatorMappingInfo extends MappingInfo {
      */
     public Index getIndex(Discriminator discrim, Column[] cols, boolean adapt) {
         Index idx = null;
-        if (cols.length > 0)
+        Table table = null;
+        if (cols.length > 0) {
+            table = cols[0].getTable();
             idx = discrim.getMappingRepository().getMappingDefaults().
-                getIndex(discrim, cols[0].getTable(), cols);
-        return createIndex(discrim, null, idx, cols, adapt);
+                    getIndex(discrim, table, cols);
+        }
+        return createIndex(discrim, null, table, idx, cols, null, adapt);
     }
 
     /**

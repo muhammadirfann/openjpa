@@ -110,10 +110,13 @@ public class VersionMappingInfo
      */
     public Index getIndex(Version version, Column[] cols, boolean adapt) {
         Index idx = null;
-        if (cols.length > 0)
+        Table table = null;
+        if (cols.length > 0) {
+            table = cols[0].getTable();
             idx = version.getMappingRepository().getMappingDefaults().
-                getIndex(version, cols[0].getTable(), cols);
-        return createIndex(version, null, idx, cols, adapt);
+                    getIndex(version, table, cols);
+        }
+        return createIndex(version, null, table, idx, cols, null, adapt);
     }
 
     /**

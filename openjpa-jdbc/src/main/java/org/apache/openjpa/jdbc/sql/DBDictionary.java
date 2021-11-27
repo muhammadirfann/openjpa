@@ -3842,8 +3842,19 @@ public class DBDictionary
 
         buf.append("INDEX ").append(indexName);
         buf.append(" ON ").append(getFullName(index.getTable(), false));
-        buf.append(" (").append(namingUtil.appendColumns(index.getColumns())).
-            append(")");
+        buf.append(" (").append(namingUtil.appendColumns(index.getColumns()));
+
+        // ESYNC-5917 HACK add functional index statements, if any.
+
+        if (index.getColumns().length > 0 && index.getFunctions().length > 0) {
+            buf.append(',');
+        }
+
+        buf.append(String.join(",", index.getFunctions()));
+
+        // ESYNC-5917 END
+
+        buf.append(")");
 
         return new String[]{ buf.toString() };
     }

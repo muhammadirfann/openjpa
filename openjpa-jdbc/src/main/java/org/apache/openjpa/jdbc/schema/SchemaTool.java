@@ -1069,7 +1069,7 @@ public class SchemaTool {
     protected Index findIndex(Table dbTable, Index idx) {
         Index[] idxs = dbTable.getIndexes();
         for (Index index : idxs)
-            if (idx.columnsMatch(index.getColumns()))
+            if (idx.columnsMatch(index.getColumns()) && idx.functionsMatch(index.getFunctions()))
                 return index;
         return null;
     }
