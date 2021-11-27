@@ -296,7 +296,8 @@ public class FieldMappingInfo
         if (fk.getColumns().length > 0)
             idx = field.getMappingRepository().getMappingDefaults().
                 getJoinIndex(field, fk.getTable(), fk.getColumns());
-        return createIndex(field, "join", idx, fk.getColumns(), adapt);
+        return createIndex(field, "join", fk.getTable(),
+                idx, fk.getColumns(), null, adapt);
     }
 
     /**

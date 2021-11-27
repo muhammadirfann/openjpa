@@ -257,9 +257,10 @@ public class ValueMappingInfo extends MappingInfo {
         if (cols.length == 0)
             return null;
 
+        Table table = cols[0].getTable();
         Index idx = val.getMappingRepository().getMappingDefaults().
-            getIndex(val, name, cols[0].getTable(), cols);
-        return createIndex(val, null, idx, cols, adapt);
+            getIndex(val, name, table, cols);
+        return createIndex(val, null, table, idx, cols, null, adapt);
     }
 
     /**

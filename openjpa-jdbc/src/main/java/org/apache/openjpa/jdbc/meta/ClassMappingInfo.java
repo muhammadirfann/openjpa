@@ -605,6 +605,7 @@ public class ClassMappingInfo
             List<Index> indices = _indices.get(tableName);
             for (Index template : indices) {
                 Column[] templateColumns = template.getColumns();
+                String[] templateFunctions = template.getFunctions();
                 Column[] columns = new Column[templateColumns.length];
                 Table table = getTable((ClassMapping)cm, tableName, adapt);
                 for (int i = 0; i < columns.length; i++) {
@@ -618,7 +619,8 @@ public class ClassMappingInfo
                     Column column = table.getColumn(columnName);
                     columns[i] = column;
                 }
-                Index idx = createIndex(cm, "index", template, columns, adapt);
+                Index idx = createIndex(cm, "index", table, template, columns,
+                        templateFunctions, adapt);
                 if (idx != null)
                     result.add(idx);
             }

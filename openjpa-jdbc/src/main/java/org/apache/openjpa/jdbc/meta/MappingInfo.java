@@ -884,24 +884,36 @@ public abstract class MappingInfo implements Serializable {
      * @param adapt whether we can modify the existing mapping or schema
      */
     protected Index createIndex(MetaDataContext context, String prefix,
-        Index tmplate, Column[] cols, boolean adapt) {
-        if (prefix == null)
+        Table table, Index tmplate, Column[] cols, String[] functions, boolean adapt) {
+        if (prefix == null) {
             prefix = "generic";
+        }
+
+        if (functions == null) { functions = new String[0]; }
+        if (cols == null) { cols = new Column[0]; }
 
         // can't create an index if there are no cols
-        if (cols == null || cols.length == 0) {
+        if (cols.length == 0 && functions.length == 0) {
             if (_idx != null)
                 throw new MetaDataException(_loc.get(prefix
                     + "-no-index-cols", context));
             return null;
         }
 
+        if (table == null) {
+            if (cols.length == 0) {
+                throw new IllegalArgumentException("Attempting to create (internal?) index, " +
+                        "but no table name nor columns available - can not determine table " +
+                        "source");
+            }
+            table = cols[0].getTable();
+        }
+
         // look for an existing index on these columns
-        Table table = cols[0].getTable();
         Index[] idxs = table.getIndexes();
         Index exist = null;
         for (int i = 0; i < idxs.length; i++) {
-            if (idxs[i].columnsMatch(cols)) {
+            if (idxs[i].columnsMatch(cols) && idxs[i].functionsMatch(functions)) {
                 exist = idxs[i];
                 break;
             }
@@ -943,14 +955,20 @@ public abstract class MappingInfo implements Serializable {
             // preserve multiple columns if they are specified in the index
             if (_idx.getColumns() != null && _idx.getColumns().length > 1)
                 cols = _idx.getColumns();
-        } else
+        } else {
             unq = tmplate.isUnique();
+        }
 
         // if no name provided by user info, make one
         if (DBIdentifier.isNull(name)) {
             if (tmplate != null)
                 name = tmplate.getIdentifier();
             else {
+                if (cols.length == 0) {
+                    throw new IllegalArgumentException("You have declared a function-only index without" +
+                            " columns on table "+table.getIdentifier()+". Name can not be auto-generated," +
+                            " please provide the name explicitly!");
+                }
                 name = cols[0].getIdentifier();
                 name = repos.getDBDictionary().getValidIndexName(name, table);
             }
@@ -959,6 +977,7 @@ public abstract class MappingInfo implements Serializable {
         Index idx = table.addIndex(name);
         idx.setUnique(unq);
         idx.setColumns(cols);
+        idx.setFunctions(functions);
         return idx;
     }
 

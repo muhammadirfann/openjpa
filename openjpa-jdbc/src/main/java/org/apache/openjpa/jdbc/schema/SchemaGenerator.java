@@ -782,14 +782,33 @@ public class SchemaGenerator {
 
             // statistics don't have names; skip them
             name = idxs[i].getIdentifier();
+
+            _log.warn("Index "+name+", col "+idxs[i].getColumnIdentifier()+" for "+tableName + "(pk "+pkName+")");
+
             if (DBIdentifier.isEmpty(name)
-                || (pkName != null && name.equals(pkName))
+                || name.equals(pkName)
                 || _dict.isSystemIndex(name, table))
                 continue;
 
             colName = idxs[i].getColumnIdentifier();
-            if (table.getColumn(colName) == null)
-                continue;
+            Column column = table.getColumn(colName);
+            String function = null;
+
+            // ESYNC-5917 - HACK function index support
+
+            if (column == null) {
+
+                String colNameStr = colName.getName();
+                if (colNameStr.startsWith("\"") && colNameStr.endsWith("\"")) {
+                    colNameStr = colNameStr.substring(1, colNameStr.length() - 1);
+                }
+                if (colNameStr.contains("(")) {
+                    function = colNameStr;
+                }
+
+            }
+
+            if (column == null && function == null) { continue; }
 
             if (_log.isTraceEnabled())
                 _log.trace(_loc.get("gen-index", name, table, colName));
@@ -799,8 +818,14 @@ public class SchemaGenerator {
             if (idx == null) {
                 idx = table.addIndex(name);
                 idx.setUnique(idxs[i].isUnique());
+                idx.setFunctions(new String[0]);
             }
-            idx.addColumn(table.getColumn(colName));
+            if (column != null) {
+                idx.addColumn(column);
+            }
+            if (function != null) {
+                idx.addFunction(function);
+            }
         }
     }
 

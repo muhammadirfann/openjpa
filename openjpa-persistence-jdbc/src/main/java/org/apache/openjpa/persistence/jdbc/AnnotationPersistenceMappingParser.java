@@ -659,7 +659,20 @@ public class AnnotationPersistenceMappingParser
             throw new UserException(_loc.get("index-no-column", ctx));
         }
 
-        DBIdentifier[] sColNames = DBIdentifier.toArray(columnNames.split(","), DBIdentifierType.COLUMN, delimit());
+        String [] colNamesStr = columnNames.split(",");
+        List<DBIdentifier> columns = new ArrayList<>();
+        List<String> functions = new ArrayList<>();
+
+        for (String colName : colNamesStr) {
+            colName = colName.trim();
+            if (colName.startsWith("@fun:")) {
+                functions.add(colName.substring(5));
+            } else {
+                columns.add(DBIdentifier.newColumn(colName, delimit()));
+            }
+        }
+
+        DBIdentifier[] sColNames = columns.toArray(new DBIdentifier[0]);
         org.apache.openjpa.jdbc.schema.Index indx = new org.apache.openjpa.jdbc.schema.Index();
         for (int i = 0; i < sColNames.length; i++) {
             if (DBIdentifier.isEmpty(sColNames[i]))
@@ -670,6 +683,7 @@ public class AnnotationPersistenceMappingParser
             indx.addColumn(column);
         }
         indx.setUnique(anno.unique());
+        indx.setFunctions(functions.toArray(new String[0]));
         if (!StringUtil.isEmpty(anno.name())) {
             indx.setIdentifier(DBIdentifier.newConstraint(anno.name(), delimit()));
         }
