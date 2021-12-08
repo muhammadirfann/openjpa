@@ -51,6 +51,7 @@ import org.apache.openjpa.jdbc.kernel.JDBCFetchConfiguration;
 import org.apache.openjpa.jdbc.kernel.JDBCStore;
 import org.apache.openjpa.jdbc.kernel.exps.FilterValue;
 import org.apache.openjpa.jdbc.schema.Column;
+import org.apache.openjpa.jdbc.schema.Index;
 import org.apache.openjpa.jdbc.schema.Table;
 import org.apache.openjpa.kernel.Filters;
 import org.apache.openjpa.lib.jdbc.DelegatingConnection;
@@ -170,7 +171,7 @@ public class PostgresDictionary extends DBDictionary {
             "BOOL", "BYTEA", "NAME", "INT8", "INT2", "INT2VECTOR", "INT4",
             "REGPROC", "TEXT", "OID", "TID", "XID", "CID", "OIDVECTOR",
             "SET", "FLOAT4", "FLOAT8", "ABSTIME", "RELTIME", "TINTERVAL",
-            "MONEY",
+            "MONEY", "JSONB"
         }));
         booleanRepresentation = BooleanRepresentationFactory.BOOLEAN;
 
@@ -947,6 +948,50 @@ public class PostgresDictionary extends DBDictionary {
             return (PGConnection) getDbcpDelegate(innerConn);
         }
         return (PGConnection) unwrapConnection(conn, PGConnection.class);
+    }
+
+    @Override
+    protected String indexUsing(Index index) {
+
+        int count = 0;
+        boolean hasJson = false;
+
+        for (Column c : index.getColumns()) {
+            count++;
+            hasJson = hasJson || isJson(c);
+        }
+
+        if (!hasJson) { return ""; }
+
+        if (count > 1) {
+            // $TODO: that's not really reasonable, but why would somebody want to do that?
+            throw new IllegalArgumentException("At this point, indexing JSON fields must contain single column only");
+        }
+
+        return " using gin ";
+
+    }
+
+    @Override
+    public String getMarkerForInsertUpdate(Column col, Object val) {
+
+        if (isJson(col)) { return "?::jsonb"; }
+
+        return "?";
+
+    }
+
+    private boolean isJson(Column col) {
+        DBIdentifier dbi = col.getTypeIdentifier();
+        if (dbi != null) {
+            String colName = dbi.getName();
+            if (colName != null) {
+                if ("JSONB".equalsIgnoreCase(colName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

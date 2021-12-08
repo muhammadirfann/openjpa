@@ -115,8 +115,10 @@ public class PreparedStatementManagerImpl
         PreparedStatement stmnt = prepareStatement(sql, autoAssignColNames);
 
         // setup parameters and execute statement
-        if (stmnt != null)
+        if (stmnt != null) {
             row.flush(stmnt, _dict, _store);
+        }
+
         try {
             int count = executeUpdate(stmnt, sql, row);
             if (count != 1) {
@@ -266,8 +268,7 @@ public class PreparedStatementManagerImpl
      * This method is to provide override for non-JDBC or JDBC-like
      * implementation of executing update.
      */
-    protected int executeUpdate(PreparedStatement stmnt, String sql,
-        RowImpl row) throws SQLException {
+    protected int executeUpdate(PreparedStatement stmnt, String sql, RowImpl row) throws SQLException {
         return stmnt.executeUpdate();
     }
 

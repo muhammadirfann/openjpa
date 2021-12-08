@@ -3689,7 +3689,7 @@ public class DBDictionary
             }
         }
 
-        buf.append(endBuf.toString());
+        buf.append(endBuf);
         buf.append(")");
         return new String[]{ buf.toString() };
     }
@@ -3788,6 +3788,10 @@ public class DBDictionary
 
         buf.append("INDEX ").append(indexName);
         buf.append(" ON ").append(getFullName(index.getTable(), false));
+
+        // ESYNC-5899 GIN indexes over JSONB fields
+        buf.append(indexUsing(index));
+
         buf.append(" (").append(namingUtil.appendColumns(index.getColumns()));
 
         // ESYNC-5917 HACK add functional index statements, if any.
@@ -3803,6 +3807,10 @@ public class DBDictionary
         buf.append(")");
 
         return new String[]{ buf.toString() };
+    }
+
+    protected String indexUsing(Index index) {
+        return "";
     }
 
     /**

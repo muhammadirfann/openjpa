@@ -783,8 +783,6 @@ public class SchemaGenerator {
             // statistics don't have names; skip them
             name = idxs[i].getIdentifier();
 
-            _log.warn("Index "+name+", col "+idxs[i].getColumnIdentifier()+" for "+tableName + "(pk "+pkName+")");
-
             if (DBIdentifier.isEmpty(name)
                 || name.equals(pkName)
                 || _dict.isSystemIndex(name, table))
