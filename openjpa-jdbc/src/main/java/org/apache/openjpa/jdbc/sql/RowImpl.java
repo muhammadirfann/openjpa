@@ -956,9 +956,7 @@ public class RowImpl
     /**
      * Flush the row's values to the given prepared statement.
      */
-    public void flush(PreparedStatement stmnt, DBDictionary dict,
-        JDBCStore store)
-        throws SQLException {
+    public void flush(PreparedStatement stmnt, DBDictionary dict, JDBCStore store) throws SQLException {
         flush(stmnt, 1, dict, store);
     }
 
