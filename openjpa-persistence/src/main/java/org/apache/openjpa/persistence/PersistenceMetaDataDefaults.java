@@ -53,6 +53,7 @@ import java.util.Set;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Basic;
+import javax.persistence.Convert;
 import javax.persistence.ElementCollection;
 import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
@@ -185,6 +186,12 @@ public class PersistenceMetaDataDefaults
         }
         if (pstrat != null)
             return pstrat;
+
+        // ESYNC-5945 Converted items always are basic columns
+        // $TODO: that's probably wrong, but suits us
+        if (((AnnotatedElement) member).isAnnotationPresent(Convert.class)) {
+            return BASIC;
+        }
 
         Class type;
         int code;

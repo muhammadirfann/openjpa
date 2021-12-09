@@ -42,6 +42,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+import javax.persistence.Convert;
 import javax.persistence.metamodel.StaticMetamodel;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
@@ -167,7 +168,12 @@ public class AnnotationProcessor6 extends AbstractProcessor {
      *
      */
     private TypeCategory toMetaModelTypeCategory(TypeMirror mirror,
-        String name, boolean persistentCollection) {
+        String name, boolean persistentCollection, boolean isConverted) {
+
+        if (isConverted) {
+            return TypeCategory.ATTRIBUTE;
+        }
+
         if (mirror.getKind() == TypeKind.ARRAY && persistentCollection ) {
             return TypeCategory.LIST;
         }
@@ -261,19 +267,20 @@ public class AnnotationProcessor6 extends AbstractProcessor {
 
             for (Element m : members) {
                 boolean isPersistentCollection = m.getAnnotation(PersistentCollection.class) != null;
+                boolean isConverted = m.getAnnotation(Convert.class) != null;
 
                 TypeMirror decl  = handler.getDeclaredType(m);
                 String fieldName = handler.getPersistentMemberName(m);
                 String fieldType = handler.getDeclaredTypeName(decl, true, isPersistentCollection);
                 TypeCategory typeCategory =
-                    toMetaModelTypeCategory(decl, fieldType, isPersistentCollection);
+                    toMetaModelTypeCategory(decl, fieldType, isPersistentCollection, isConverted);
                 String metaModelType = typeCategory.getMetaModelType();
                 SourceCode.Field modelField = null;
                 switch (typeCategory) {
                 case ATTRIBUTE:
                     modelField = modelClass.addField(fieldName, metaModelType);
                     modelField.addParameter(originalSimpleClass)
-                              .addParameter(fieldType);
+                              .addParameter(isConverted ? "String" : fieldType);
                     break;
                 case COLLECTION:
                 case LIST:

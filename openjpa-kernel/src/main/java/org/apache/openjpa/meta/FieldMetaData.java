@@ -162,6 +162,7 @@ public class FieldMetaData
     ////////////////////////////////////////////////////////////////////
 
     // misc info
+    private Class<?> _converterClass = null;
     private Class<?> _proxyClass = null;
     private Object _initializer = null;
     private boolean _transient = false;
@@ -414,6 +415,17 @@ public class FieldMetaData
      */
     public Class<?> getProxyType() {
         return (_proxyClass == null) ? getDeclaredType() : _proxyClass;
+    }
+
+    /**
+     * The converter class to use, if any, or {@code null}.
+     */
+    public Class<?> getConverterClass() {
+        return _converterClass;
+    }
+
+    public void setConverterClass(Class<?> type) {
+        _converterClass = type;
     }
 
     /**
@@ -2021,6 +2033,7 @@ public class FieldMetaData
         // copy field-level info; use get methods to force resolution of
         // lazy data
         _proxyClass = field.getProxyType();
+        _converterClass = field.getConverterClass();
         _initializer = field.getInitializer();
         _transient = field.isTransient();
         _nullValue = field.getNullValue();

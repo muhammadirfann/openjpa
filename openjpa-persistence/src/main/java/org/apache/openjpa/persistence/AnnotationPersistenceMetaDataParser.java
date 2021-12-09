@@ -21,6 +21,7 @@ package org.apache.openjpa.persistence;
 import static javax.persistence.GenerationType.AUTO;
 import static org.apache.openjpa.persistence.MetaDataTag.ACCESS;
 import static org.apache.openjpa.persistence.MetaDataTag.CACHEABLE;
+import static org.apache.openjpa.persistence.MetaDataTag.CONVERT;
 import static org.apache.openjpa.persistence.MetaDataTag.DATASTORE_ID;
 import static org.apache.openjpa.persistence.MetaDataTag.DATA_CACHE;
 import static org.apache.openjpa.persistence.MetaDataTag.DEPENDENT;
@@ -96,6 +97,8 @@ import javax.persistence.AccessType;
 import javax.persistence.Basic;
 import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
+import javax.persistence.Convert;
+import javax.persistence.Converter;
 import javax.persistence.ElementCollection;
 import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
@@ -242,6 +245,7 @@ public class AnnotationPersistenceMetaDataParser
         _tags.put(ManagedInterface.class, MANAGED_INTERFACE);
         _tags.put(ReadOnly.class, READ_ONLY);
         _tags.put(Type.class, TYPE);
+        _tags.put(Convert.class, CONVERT);
     }
 
     private final OpenJPAConfiguration _conf;
@@ -1178,7 +1182,7 @@ public class AnnotationPersistenceMetaDataParser
         if (isMetaDataMode()) {
             switch (pstrat) {
                 case BASIC:
-                    parseBasic(fmd, (Basic) el.getAnnotation(Basic.class), lob);
+                    parseBasic(fmd, el, lob);
                     break;
                 case MANY_ONE:
                     parseManyToOne(fmd, (ManyToOne) el.getAnnotation
@@ -1238,6 +1242,9 @@ public class AnnotationPersistenceMetaDataParser
             switch (tag) {
                 case ACCESS:
                     parseAccess(fmd, (Access)anno);
+                    break;
+                case CONVERT:
+                    parseConvert(fmd, (Convert)anno);
                     break;
                 case FLUSH_MODE:
                     if (isMetaDataMode())
@@ -1444,13 +1451,20 @@ public class AnnotationPersistenceMetaDataParser
     /**
      * Parse @Basic. Given annotation may be null.
      */
-    private void parseBasic(FieldMetaData fmd, Basic anno, boolean lob) {
+    private void parseBasic(FieldMetaData fmd, AnnotatedElement el, boolean lob) {
+
+        Basic anno = el.getAnnotation(Basic.class); // can be null.
+
         Class<?> type = fmd.getDeclaredType();
         if (lob && type != String.class
             && type != char[].class && type != Character[].class
             && type != byte[].class && type != Byte[].class)
             fmd.setSerialized(true);
-        else if (!lob) {
+        // ESYNC-5945 we are going to assume that the type of converted
+        // is always something primitive, or just plainly that it is string.
+        // because Convert annotation has no type specification, and Converter
+        // doesn't declare its type because type erasure. What were they thinking?
+        else if /* ESYNC-5945 */ (!el.isAnnotationPresent(Convert.class) &&  /* END */ !lob) {
             switch (fmd.getDeclaredTypeCode()) {
                 case JavaTypes.OBJECT:
                     if (Enum.class.isAssignableFrom(type))
@@ -1998,6 +2012,15 @@ public class AnnotationPersistenceMetaDataParser
     		meta.setAccessType(AccessCode.EXPLICIT
             | (access.value() == AccessType.FIELD ?
             		AccessCode.FIELD : AccessCode.PROPERTY));
+    	}
+    }
+
+    /**
+     * Set the converter class, if specified
+     */
+    private void parseConvert(FieldMetaData meta, Convert convert) {
+    	if (convert != null) {
+            meta.setConverterClass(convert.converter());
     	}
     }
 

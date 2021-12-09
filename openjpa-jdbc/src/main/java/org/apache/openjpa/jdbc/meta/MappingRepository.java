@@ -37,6 +37,7 @@ import org.apache.openjpa.jdbc.meta.strats.CharArrayStreamValueHandler;
 import org.apache.openjpa.jdbc.meta.strats.CharArrayValueHandler;
 import org.apache.openjpa.jdbc.meta.strats.ClassNameDiscriminatorStrategy;
 import org.apache.openjpa.jdbc.meta.strats.ClobValueHandler;
+import org.apache.openjpa.jdbc.meta.strats.ConvertValueHandler;
 import org.apache.openjpa.jdbc.meta.strats.ElementEmbedValueHandler;
 import org.apache.openjpa.jdbc.meta.strats.EmbedFieldStrategy;
 import org.apache.openjpa.jdbc.meta.strats.EmbeddedClassStrategy;
@@ -876,6 +877,16 @@ public class MappingRepository extends MetaDataRepository {
                 }
                 return new MaxEmbeddedBlobFieldStrategy();
             }
+        }
+
+        // ESYNC-5945 If there is a converter, let's not
+        // try to figure the strategy based on the field type
+        if (field.getConverterClass() != null) {
+            handler = new ConvertValueHandler(field.getConverterClass());
+            if (installHandlers) {
+                field.setHandler(handler);
+            }
+            return new HandlerFieldStrategy();
         }
 
         // check for known field strategies
