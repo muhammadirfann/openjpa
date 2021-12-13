@@ -36,7 +36,7 @@
     <name>OpenJPA Parent POM</name>
     <description>Apache OpenJPA implementation of JSR-338 JPA 2.2</description>
 
-    <version>3.2.0</version>
+    <version>3.2.0-xl4.1-SNAPSHOT</version>
 
     <properties>
         <java.class.version>1.8</java.class.version>
