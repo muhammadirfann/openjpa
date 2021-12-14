@@ -87,6 +87,9 @@ public abstract class AbstractCriteriaTestCase extends TestCase {
         map.put("openjpa.RuntimeUnenhancedClasses", "unsupported");
         map.put("openjpa.Compatibility", "QuotedNumbersInQueries=true");
         map.put("openjpa.jdbc.JDBCListeners", new JDBCListener[] { getAuditor() });
+        /* so I can see issued queries */
+        map.put("openjpa.Log", "File=/tmp/jpa.log, DefaultLevel=WARN, SQL=TRACE");
+        map.put("openjpa.ConnectionFactoryProperties", "PrintParameters=true");
 
         StringBuilder buf = new StringBuilder();
         for (Class<?> c : types) {

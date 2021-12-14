@@ -27,9 +27,7 @@ import java.util.function.BiFunction;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Predicate;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.openjpa.kernel.exps.ExpressionFactory;
-import org.apache.openjpa.kernel.exps.Literal;
 import org.apache.openjpa.kernel.exps.Value;
 
 /**
@@ -163,6 +161,10 @@ abstract class PredicateImpl extends ExpressionImpl<Boolean> implements Predicat
         return new Expr((ExpressionImpl<Boolean>) expr);
     }
 
+    /* OPENJPA-2895 This filler method was a *really* bad idea.
+       It assumes that implementations behave well; however a lot of them don't
+       populate the _exps, in which case they get converted to TRUE without any
+       reasonable cause, leading to horrible bugs.
     @Override
     org.apache.openjpa.kernel.exps.Value toValue(ExpressionFactory factory, CriteriaQueryImpl<?> q) {
         if (_exps.isEmpty()) {
@@ -170,6 +172,7 @@ abstract class PredicateImpl extends ExpressionImpl<Boolean> implements Predicat
         }
         throw new AbstractMethodError(this.getClass().getName());
     }
+     */
 
     @Override
     org.apache.openjpa.kernel.exps.Expression toKernelExpression(ExpressionFactory factory, CriteriaQueryImpl<?> q) {

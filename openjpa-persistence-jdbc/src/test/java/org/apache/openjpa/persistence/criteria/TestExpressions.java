@@ -46,10 +46,7 @@ public class TestExpressions extends CriteriaTest {
 
                     boolean willFind = i == 0;
                     boolean useOr = j==0;
-
-                    // $TODO: THAT'S FAILING BECAUSE OF OPENJPA-2895
-                    // boolean useEq = k==0;
-                    boolean useEq = false;
+                    boolean useEq = k==0;
 
                     cb.createQuery(Order.class);
 

@@ -264,12 +264,12 @@ class Expressions {
      * i.e. an expression whose resultant type is Boolean.
      *
      */
-   public static abstract class BinaryLogicalExpression extends PredicateImpl {
+   public static abstract class BinaryLogicalExpression extends ExpressionImpl<Boolean> {
         protected final ExpressionImpl<?> e1;
         protected final ExpressionImpl<?> e2;
 
         public BinaryLogicalExpression(Expression<?> x, Expression<?> y) {
-            super();
+            super(Boolean.class);
             e1 = (ExpressionImpl<?>)x;
             e2 = (ExpressionImpl<?>)y;
         }

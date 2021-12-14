@@ -1937,6 +1937,7 @@
                     <configuration>
                         <argLine>${surefire.jvm.args}</argLine>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                        <forkCount>0</forkCount> <!-- so I can debug from IDEA -->
                         <trimStackTrace>false</trimStackTrace>
                         <useSystemClassLoader>true</useSystemClassLoader>
                         <excludes>
