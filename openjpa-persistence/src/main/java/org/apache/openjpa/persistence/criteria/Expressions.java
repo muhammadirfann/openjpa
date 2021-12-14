@@ -35,6 +35,7 @@ import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Subquery;
 
+import org.apache.openjpa.kernel.exps.Exp;
 import org.apache.openjpa.kernel.exps.ExpressionFactory;
 import org.apache.openjpa.kernel.exps.Literal;
 import org.apache.openjpa.kernel.exps.Value;
@@ -1461,7 +1462,7 @@ class Expressions {
         public PredicateImpl not() {
             In<T> notIn = new In<>(e);
             notIn.markNegated();
-            for (Predicate e : _exps) {
+            for (ExpressionImpl<Boolean> e : _exps) {
                 notIn.add(e);
             }
             return notIn;
@@ -1822,30 +1823,6 @@ class Expressions {
         @Override
         public StringBuilder asValue(AliasContext q) {
             return Expressions.asValue(q, "ANY", OPEN_BRACE, e, CLOSE_BRACE);
-        }
-    }
-
-    public static class Not extends PredicateImpl {
-        protected final ExpressionImpl<Boolean> e;
-        public Not(Expression<Boolean> ne) {
-            super();
-            e = (ExpressionImpl<Boolean>)ne;
-        }
-
-        @Override
-        public org.apache.openjpa.kernel.exps.Expression toKernelExpression(
-          ExpressionFactory factory, CriteriaQueryImpl<?> q) {
-            return factory.not(e.toKernelExpression(factory, q));
-        }
-
-        @Override
-        public void acceptVisit(CriteriaExpressionVisitor visitor) {
-            Expressions.acceptVisit(visitor, this, e);
-        }
-
-        @Override
-        public StringBuilder asValue(AliasContext q) {
-            return Expressions.asValue(q, "NOT ", e);
         }
     }
 
