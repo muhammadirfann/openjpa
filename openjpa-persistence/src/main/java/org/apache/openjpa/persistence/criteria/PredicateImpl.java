@@ -22,12 +22,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.BiFunction;
 
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Predicate;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.openjpa.kernel.exps.ExpressionFactory;
 import org.apache.openjpa.kernel.exps.Literal;
+import org.apache.openjpa.kernel.exps.Value;
 
 /**
  * Predicate is a expression that evaluates to true or false.
@@ -45,13 +48,16 @@ import org.apache.openjpa.kernel.exps.Literal;
  * @since 2.0.0
  */
 abstract class PredicateImpl extends ExpressionImpl<Boolean> implements Predicate {
-    static final Expression<?> TRUE_CONSTANT = new Expressions.Constant<>(true);
-    static final Expression<?> FALSE_CONSTANT = new Expressions.Constant<>(false);
+
+    static final Expression<Boolean> TRUE_CONSTANT = new Expressions.Constant<>(true);
+    static final Expression<Boolean> FALSE_CONSTANT = new Expressions.Constant<>(false);
 
     private static Predicate TRUE;
     private static Predicate FALSE;
 
-    protected final List<Predicate> _exps = Collections.synchronizedList(new ArrayList<>());
+    // Contents of a predicate can only be instances of ExpressionImpl, since we
+    // need to call toKernelExpression(), which is internal OpenJPA method.
+    protected final List<ExpressionImpl<Boolean>> _exps = Collections.synchronizedList(new ArrayList<>());
     private final BooleanOperator _op;
     private boolean _negated = false;
 
@@ -87,7 +93,7 @@ abstract class PredicateImpl extends ExpressionImpl<Boolean> implements Predicat
      */
     public PredicateImpl add(Expression<Boolean> s) {
     	synchronized (_exps) {
-        	_exps.add((Predicate)s); // all boolean expressions are Predicate
+        	_exps.add((ExpressionImpl<Boolean>) s);
 		}
         return this;
     }
@@ -128,7 +134,7 @@ abstract class PredicateImpl extends ExpressionImpl<Boolean> implements Predicat
      */
     @Override
     public PredicateImpl not() {
-        return new Expressions.Not(this).markNegated();
+        return new Not(this);
     }
 
     protected PredicateImpl markNegated() {
@@ -138,18 +144,23 @@ abstract class PredicateImpl extends ExpressionImpl<Boolean> implements Predicat
 
     public static Predicate TRUE() {
     	if (TRUE == null) {
-    	    ExpressionImpl<Integer> ONE  = new Expressions.Constant<>(1);
-    		TRUE = new Expressions.Equal(ONE, ONE);
+    		TRUE = of(TRUE_CONSTANT);
     	}
     	return TRUE;
     }
 
     public static Predicate FALSE() {
     	if (FALSE == null) {
-    	    ExpressionImpl<Integer> ONE  = new Expressions.Constant<>(1);
-    		FALSE = new Expressions.NotEqual(ONE, ONE);
+    		FALSE = of(FALSE_CONSTANT);
     	}
     	return FALSE;
+    }
+
+    public static PredicateImpl of(Expression<Boolean> expr) {
+        if (expr instanceof PredicateImpl) {
+            return (PredicateImpl) expr;
+        }
+        return new Expr((ExpressionImpl<Boolean>) expr);
     }
 
     @Override
@@ -162,30 +173,36 @@ abstract class PredicateImpl extends ExpressionImpl<Boolean> implements Predicat
 
     @Override
     org.apache.openjpa.kernel.exps.Expression toKernelExpression(ExpressionFactory factory, CriteriaQueryImpl<?> q) {
+
+        org.apache.openjpa.kernel.exps.Expression result;
+
         if (_exps.isEmpty()) {
             Predicate nil = _op == BooleanOperator.AND ? TRUE() : FALSE();
-            return ((PredicateImpl)nil).toKernelExpression(factory, q);
-        }
-        if (_exps.size() == 1) {
-            Predicate e0 = _exps.get(0);
-            if (isNegated())
-                e0 = e0.not();
-            return ((PredicateImpl)e0).toKernelExpression(factory, q);
+            result = ((PredicateImpl) nil).toKernelExpression(factory, q);
+
+        } else {
+
+            BiFunction<org.apache.openjpa.kernel.exps.Expression,
+                    org.apache.openjpa.kernel.exps.Expression,
+                    org.apache.openjpa.kernel.exps.Expression> apply =
+                    (e1,e2)-> _op == BooleanOperator.AND ? factory.and(e1, e2) : factory.or(e1, e2);
+
+            result = null;
+
+            for (ExpressionImpl<Boolean> exp : _exps) {
+
+                org.apache.openjpa.kernel.exps.Expression item =
+                        exp.toKernelExpression(factory, q);
+
+                if (result == null) {
+                    result = item;
+                } else {
+                    result = apply.apply(result, item);
+                }
+            }
+
         }
 
-        ExpressionImpl<?> e1 = (ExpressionImpl<?>)_exps.get(0);
-        ExpressionImpl<?> e2 = (ExpressionImpl<?>)_exps.get(1);
-        org.apache.openjpa.kernel.exps.Expression ke1 = e1.toKernelExpression(factory, q);
-        org.apache.openjpa.kernel.exps.Expression ke2 = e2.toKernelExpression(factory, q);
-        org.apache.openjpa.kernel.exps.Expression result = _op == BooleanOperator.AND
-            ? factory.and(ke1,ke2) : factory.or(ke1, ke2);
-
-        for (int i = 2; i < _exps.size(); i++) {
-            PredicateImpl p = (PredicateImpl)_exps.get(i);
-            result = _op == BooleanOperator.AND
-              ? factory.and(result, p.toKernelExpression(factory, q))
-              : factory.or(result, p.toKernelExpression(factory,q));
-        }
         return _negated ? factory.not(result) : result;
     }
 
@@ -201,6 +218,31 @@ abstract class PredicateImpl extends ExpressionImpl<Boolean> implements Predicat
         if (braces) buffer.insert(0, "(").append(")");
         if (isNegated()) buffer.insert(0, "NOT ");
         return buffer;
+    }
+
+    /**
+     * Simple expression wrapper.
+     */
+    static class Expr extends PredicateImpl {
+        public Expr(ExpressionImpl<Boolean> of) {
+            add(of);
+        }
+
+        @Override
+        Value toValue(ExpressionFactory factory, CriteriaQueryImpl<?> q) {
+            return _exps.get(0).toValue(factory, q);
+        }
+    }
+
+    /**
+     * Concrete NOT predicate.
+     */
+    static class Not extends PredicateImpl {
+        public Not(PredicateImpl of) {
+            add(of);
+            markNegated();
+        }
+
     }
 
     /**

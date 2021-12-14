@@ -282,7 +282,7 @@ class CriteriaQueryImpl<T> implements OpenJPACriteriaQuery<T>, AliasContext {
 
     @Override
     public CriteriaQuery<T> having(Expression<Boolean> restriction) {
-        _having = (PredicateImpl)restriction;
+        _having = PredicateImpl.of(restriction);
         return this;
     }
 
@@ -347,7 +347,7 @@ class CriteriaQueryImpl<T> implements OpenJPACriteriaQuery<T>, AliasContext {
             _where = null;
             return this;
         }
-        _where = (PredicateImpl)restriction;
+        _where = PredicateImpl.of(restriction);
         return this;
     }
 
