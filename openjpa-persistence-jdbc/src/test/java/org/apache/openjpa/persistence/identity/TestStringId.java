@@ -60,10 +60,14 @@ public class TestStringId extends AbstractPersistenceTestCase {
         assertTrue(em.contains(sie1));
 
         StringIdEntity sie2 = em.find(StringIdEntity.class, "ABC");
-        assertSame("Find should return the same instance with trailing whitespace", sie1, sie2);
+        // ESYNC-6268
+        // assertSame("Find should return the same instance with trailing whitespace", sie1, sie2);
+        assertNotSame("Find should return the same instance with trailing whitespace", sie1, sie2);
 
         StringIdEntity sie3 = em.find(StringIdEntity.class, "ABC  ");
-        assertSame("Find should return the same instance with trailing whitespace", sie1, sie3);
+        // ESYNC-6268
+        // assertSame("Find should return the same instance with trailing whitespace", sie1, sie3);
+        assertNotSame("Find should return the same instance with trailing whitespace", sie1, sie3);
 
         assertNotSame("Leading WS should not match", sie1, em.find(StringIdEntity.class, " ABC"));
 

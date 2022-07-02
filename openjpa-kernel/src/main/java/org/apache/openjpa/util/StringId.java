@@ -31,14 +31,21 @@ public final class StringId extends OpenJPAId {
     private static final long serialVersionUID = 1L;
     private final String key;
 
+    // ESYNC-6268 : don't strip white space from the string IDs.
+    // It's really criminal, as the primary keys will not have their spaces
+    // stripped in any other circumstances, except for when being looked up
+    // through a string object ID.
+
     public StringId(Class<?> cls, String key) {
         super(cls);
-        this.key = (key == null) ? "" : StringUtil.stripEnd(key, null);
+        // this.key = (key == null) ? "" : StringUtil.stripEnd(key, null);
+        this.key = (key == null) ? "" : key;
     }
 
     public StringId(Class<?> cls, String key, boolean subs) {
         super(cls, subs);
-        this.key = (key == null) ? "" : StringUtil.stripEnd(key, null);
+        // this.key = (key == null) ? "" : StringUtil.stripEnd(key, null);
+        this.key = (key == null) ? "" : key;
     }
 
     public String getId() {
